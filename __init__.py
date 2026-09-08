@@ -1,13 +1,13 @@
 bl_info = {
 	"name": "RE Chain Editor",
 	"author": "NSA Cloud, alphaZomega",
-	"version": (14, 0, 1),
+	"version": (14, 0, 2),
 	"blender": (3, 1, 2),
 	"location": "File > Import-Export",
 	"description": "Import and export RE Engine chain files.",
 	"warning": "",
-	"wiki_url": "https://github.com/NSACloud/RE-Chain-Editor",
-	"tracker_url": "https://github.com/NSACloud/RE-Chain-Editor/issues",
+	"wiki_url": "https://github.com/yequ172672/RE-Chain-Editor-5.2-CN/tree/feat/onimusha-wots",
+	"tracker_url": "https://github.com/yequ172672/RE-Chain-Editor-5.2-CN/issues",
 	"category": "Import-Export"}
 
 #Modified by alphaZomega to support RE2R, RE3R, RE8, RE2-3-7 RT, DMC5 and SF6 
@@ -29,6 +29,7 @@ from .modules.ui_re_chain_panels import OBJECT_PT_ChainObjectModePanel,OBJECT_PT
 from .modules.re_chain_operators import WM_OT_ChainFromBone,WM_OT_CollisionFromBones,WM_OT_AlignChainsToBones,WM_OT_AlignFrames,WM_OT_PointFrame,WM_OT_CopyChainProperties,WM_OT_PasteChainProperties,WM_OT_NewChainHeader,WM_OT_ApplyChainSettingsPreset,WM_OT_NewChainSettings,WM_OT_NewWindSettings,WM_OT_NewChainJiggle,WM_OT_ApplyChainGroupPreset,WM_OT_ApplyChainNodePreset,WM_OT_ApplyWindSettingsPreset,WM_OT_SavePreset,WM_OT_OpenPresetFolder,WM_OT_NewChainLink,WM_OT_CreateChainBoneGroup,WM_OT_SwitchToPoseMode,WM_OT_SwitchToObjectMode,WM_OT_HideNonNodes,WM_OT_HideNonAngleLimits,WM_OT_HideNonCollisions,WM_OT_UnhideAll,WM_OT_RenameBoneChain,WM_OT_ApplyAngleLimitRamp,WM_OT_AlignBoneTailsToAxis,WM_OT_SetAttrFlags,WM_OT_SetNodeAttrFlags,WM_OT_SetSettingAttrFlags,WM_OT_SetJiggleAttrFlags,WM_OT_CreateChainLinkCollision,WM_OT_CreateChainSubGroup,WM_OT_SetCFILPath
 
 from .modules.blender_re_clsp import importCLSPFile,exportCLSPFile
+from .translations import register as register_translations, unregister as unregister_translations, report as translate_report
 
 class REChainPreferences(AddonPreferences):
 	bl_idname = __name__
@@ -138,12 +139,12 @@ class ImportREChain(bpy.types.Operator, ImportHelper):
 		editorVersion = str(bl_info["version"][0])+"."+str(bl_info["version"][1])
 		print(f"\n{textColors.BOLD}RE Chain Editor V{editorVersion}{textColors.ENDC}")
 		print(f"Blender Version {bpy.app.version[0]}.{bpy.app.version[1]}.{bpy.app.version[2]}")
-		print("https://github.com/NSACloud/RE-Chain-Editor")
+		print("https://github.com/yequ172672/RE-Chain-Editor-5.2-CN/tree/feat/onimusha-wots")
 		success = importChainFile(self.filepath,options,isChain2=False)
 		if success:
 			return {"FINISHED"}
 		else:
-			self.report({"INFO"},"Failed to import RE Chain. Make sure the mesh file is imported.")
+			self.report({"INFO"},translate_report("Failed to import RE Chain. Make sure the mesh file is imported."))
 			return {"CANCELLED"}
 	def invoke(self, context, event):
 		armatureObj = None
@@ -236,18 +237,18 @@ class ExportREChain(bpy.types.Operator, ExportHelper):
 		try:
 			chainVersion = int(os.path.splitext(self.filepath)[1].replace(".",""))
 		except:
-			self.report({"INFO"},"Chain file path is missing number extension. Cannot export.")
+			self.report({"INFO"},translate_report("Chain file path is missing number extension. Cannot export."))
 			return{"CANCELLED"}
 		editorVersion = str(bl_info["version"][0])+"."+str(bl_info["version"][1])
 		print(f"\n{textColors.BOLD}RE Chain Editor V{editorVersion}{textColors.ENDC}")
 		print(f"Blender Version {bpy.app.version[0]}.{bpy.app.version[1]}.{bpy.app.version[2]}")
-		print("https://github.com/NSACloud/RE-Chain-Editor")
+		print("https://github.com/yequ172672/RE-Chain-Editor-5.2-CN/tree/feat/onimusha-wots")
 		success = exportChainFile(self.filepath,options, chainVersion)
 		if success:
-			self.report({"INFO"},"Exported RE Chain successfully.")
+			self.report({"INFO"},translate_report("Exported RE Chain successfully."))
 			bpy.data.collections[self.targetCollection]["BatchExport_path"] = self.filepath
 		else:
-			self.report({"INFO"},"RE Chain export failed. See Window > Toggle System Console for details.")
+			self.report({"INFO"},translate_report("RE Chain export failed. See Window > Toggle System Console for details."))
 		return {"FINISHED"}
 
 
@@ -298,12 +299,12 @@ class ImportRECLSP(bpy.types.Operator, ImportHelper):
 		editorVersion = str(bl_info["version"][0])+"."+str(bl_info["version"][1])
 		print(f"\n{textColors.BOLD}RE Chain Editor V{editorVersion}{textColors.ENDC}")
 		print(f"Blender Version {bpy.app.version[0]}.{bpy.app.version[1]}.{bpy.app.version[2]}")
-		print("https://github.com/NSACloud/RE-Chain-Editor")
+		print("https://github.com/yequ172672/RE-Chain-Editor-5.2-CN/tree/feat/onimusha-wots")
 		success = importCLSPFile(self.filepath,options)
 		if success:
 			return {"FINISHED"}
 		else:
-			self.report({"INFO"},"Failed to import RE CLSP. Make sure the armature for the mesh is imported.")
+			self.report({"INFO"},translate_report("Failed to import RE CLSP. Make sure the armature for the mesh is imported."))
 			return {"CANCELLED"}
 
 supportedCLSPVersions = set([3])
@@ -365,18 +366,18 @@ class ExportRECLSP(bpy.types.Operator, ExportHelper):
 		try:
 			clspVersion = int(os.path.splitext(self.filepath)[1].replace(".",""))
 		except:
-			self.report({"INFO"},"CLSP file path is missing number extension. Cannot export.")
+			self.report({"INFO"},translate_report("CLSP file path is missing number extension. Cannot export."))
 			return{"CANCELLED"}
 		editorVersion = str(bl_info["version"][0])+"."+str(bl_info["version"][1])
 		print(f"\n{textColors.BOLD}RE Chain Editor V{editorVersion}{textColors.ENDC}")
 		print(f"Blender Version {bpy.app.version[0]}.{bpy.app.version[1]}.{bpy.app.version[2]}")
-		print("https://github.com/NSACloud/RE-Chain-Editor")
+		print("https://github.com/yequ172672/RE-Chain-Editor-5.2-CN/tree/feat/onimusha-wots")
 		success = exportCLSPFile(self.filepath,options, clspVersion)
 		if success:
-			self.report({"INFO"},"Exported RE CLSP successfully.")
+			self.report({"INFO"},translate_report("Exported RE CLSP successfully."))
 			bpy.data.collections[self.targetCollection]["BatchExport_path"] = self.filepath
 		else:
-			self.report({"INFO"},"RE CLSP export failed. See Window > Toggle System Console for details.")
+			self.report({"INFO"},translate_report("RE CLSP export failed. See Window > Toggle System Console for details."))
 		return {"FINISHED"}
 
 class ImportREChain2(bpy.types.Operator, ImportHelper):
@@ -437,12 +438,12 @@ class ImportREChain2(bpy.types.Operator, ImportHelper):
 		editorVersion = str(bl_info["version"][0])+"."+str(bl_info["version"][1])
 		print(f"\n{textColors.BOLD}RE Chain Editor V{editorVersion}{textColors.ENDC}")
 		print(f"Blender Version {bpy.app.version[0]}.{bpy.app.version[1]}.{bpy.app.version[2]}")
-		print("https://github.com/NSACloud/RE-Chain-Editor")
+		print("https://github.com/yequ172672/RE-Chain-Editor-5.2-CN/tree/feat/onimusha-wots")
 		success = importChainFile(self.filepath,options,isChain2=True)
 		if success:
 			return {"FINISHED"}
 		else:
-			self.report({"INFO"},"Failed to import RE Chain. Make sure the mesh file is imported.")
+			self.report({"INFO"},translate_report("Failed to import RE Chain. Make sure the mesh file is imported."))
 			return {"CANCELLED"}
 	def invoke(self, context, event):
 		armatureObj = None
@@ -534,20 +535,20 @@ class ExportREChain2(bpy.types.Operator, ExportHelper):
 		try:
 			chainVersion = int(os.path.splitext(self.filepath)[1].replace(".",""))
 		except:
-			self.report({"INFO"},"Chain file path is missing number extension. Cannot export.")
+			self.report({"INFO"},translate_report("Chain file path is missing number extension. Cannot export."))
 			return{"CANCELLED"}
 		editorVersion = str(bl_info["version"][0])+"."+str(bl_info["version"][1])
 		print(f"\n{textColors.BOLD}RE Chain Editor V{editorVersion}{textColors.ENDC}")
 		print(f"Blender Version {bpy.app.version[0]}.{bpy.app.version[1]}.{bpy.app.version[2]}")
-		print("https://github.com/NSACloud/RE-Chain-Editor")
+		print("https://github.com/yequ172672/RE-Chain-Editor-5.2-CN/tree/feat/onimusha-wots")
 		success = exportChainFile(self.filepath,options, chainVersion,isChain2=True)
 		if success:
-			self.report({"INFO"},"Exported RE Chain successfully.")
+			self.report({"INFO"},translate_report("Exported RE Chain successfully."))
 			#Add batch export entry to RE Toolbox if it doesn't already have one
 			
 			bpy.data.collections[self.targetCollection]["BatchExport_path"] = self.filepath
 		else:
-			self.report({"INFO"},"RE Chain export failed. See Window > Toggle System Console for details.")
+			self.report({"INFO"},translate_report("RE Chain export failed. See Window > Toggle System Console for details."))
 		return {"FINISHED"}
 
 # Registration
@@ -724,6 +725,7 @@ def re_chain_editor_export(self, context):
 
 
 def register():
+	register_translations()
 	addon_updater_ops.register(bl_info)
 	for classEntry in classes:
 		bpy.utils.register_class(classEntry)
@@ -791,5 +793,6 @@ def unregister():
 		bpy.utils.unregister_class(CLSP_FH_drag_import)
 	#UNREGISTER PROPERTY GROUP PROPERTIES
 	#del bpy.types.Object.re_chain_header
+	unregister_translations()
 if __name__ == '__main__':
 	register()

@@ -7,6 +7,7 @@ from bpy.types import (Panel,
 					   )
 
 from .file_re_chain import version
+from ..translations import interface as translate_interface
 
 def tag_redraw(context, space_type="PROPERTIES", region_type="WINDOW"):
 	for window in context.window_manager.windows:
@@ -71,7 +72,7 @@ class OBJECT_PT_ChainClipboardPanel(Panel):
 		row.operator("re_chain.copy_chain_properties")
 		row.operator("re_chain.paste_chain_properties")
 		layout.label(text="Clipboard Contents:")
-		layout.label(text=str(context.scene.re_chain_clipboard.re_chain_type_name))
+		layout.label(text=translate_interface(str(context.scene.re_chain_clipboard.re_chain_type_name)))
 		
 class OBJECT_PT_ChainPoseModePanel(Panel):
 	bl_label = "RE Chain: Pose Mode Tools"
@@ -165,7 +166,7 @@ class OBJECT_PT_ChainUtilsPanel(Panel):
 		row = layout.row()
 		row.operator("re_chain.copy_chain_properties")
 		row.operator("re_chain.paste_chain_properties")
-		layout.label(text="Clipboard Contents: "+str(re_chain_toolpanel.clipboardType))
+		layout.label(text=translate_interface("Clipboard Contents: {}", re_chain_toolpanel.clipboardType))
 		layout.separator()
 		layout.label(text="Object Mode Tools")
 		layout.operator("re_chain.create_chain_header")
@@ -395,10 +396,10 @@ class OBJECT_PT_ChainSettingsSubDataPanel(Panel):
 		split = layout.split(factor=0.025)#Indent list slightly to make it more clear it's a part of a sub panel
 		col1 = split.column()
 		col2 = split.column()
-		col2.label(text = f"Chain2 version 12 (MH Wilds) and above only")
+		col2.label(text = translate_interface("Chain2 version 12 (MH Wilds) and above only"))
 		col2.prop(re_chain_chainsettings,"unknQuaternion")
 		col2.prop(re_chain_chainsettings,"unknPos")
-		col2.label(text = f"Sub Data Count: {str(len(object.re_chain_chainsettings.subDataList_items))}")
+		col2.label(text = translate_interface("Sub Data Count: {}", len(object.re_chain_chainsettings.subDataList_items)))
 
 		col2.template_list(
 			listtype_name = "CHAIN_UL_ChainSettingsSubDataList", 

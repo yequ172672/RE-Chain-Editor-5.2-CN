@@ -14,6 +14,12 @@ from .ui_re_chain_panels import tag_redraw
 from .blender_utils import showErrorMessageBox,outlinerShowObject,setGeometryNodeModifierInput
 from .re_chain_presets import saveAsPreset,readPresetJSON
 from .re_chain_geoNodes import getColCapsuleGeoNodeTree,getColSphereGeoNodeTree,getChainLinkGeoNodeTree,getConeGeoNodeTree,getLinkColGeoNodeTree,getChainGroupMat
+from ..translations import report as translate_report, tip as translate_tip
+
+
+def _show_error_message(message):
+	"""Show an operator popup using the registered translation context."""
+	showErrorMessageBox(translate_tip(message))
 
 
 class WM_OT_ChainFromBone(Operator):
@@ -35,7 +41,7 @@ class WM_OT_ChainFromBone(Operator):
 					chainList = selected
 					valid = True
 				else:
-					showErrorMessageBox("Must select pose bones to create a chain from selection.")
+					_show_error_message("Must select pose bones to create a chain from selection.")
 					return {'CANCELLED'}
 			else:
 				if len(selected) == 1:
@@ -45,7 +51,7 @@ class WM_OT_ChainFromBone(Operator):
 					chainList.insert(0,startBone)
 					#print(chainList)
 				else:
-					showErrorMessageBox("Select only the chain start bone.")
+					_show_error_message("Select only the chain start bone.")
 					return {'CANCELLED'}
 				valid = True
 				
@@ -54,7 +60,7 @@ class WM_OT_ChainFromBone(Operator):
 						valid = False
 			
 			if not valid:
-				showErrorMessageBox("Cannot have branching bones in a chain.")
+				_show_error_message("Cannot have branching bones in a chain.")
 				return {'CANCELLED'}
 			else:
 				#chainEntryCollection = getCollection(f"Chain Entries - {chainCollection.name}",chainCollection,makeNew = False)
@@ -230,9 +236,9 @@ class WM_OT_ChainFromBone(Operator):
 				lightObj.hide_viewport = bpy.context.scene.re_chain_toolpanel.hideLastNodeAngleLimit
 				alignChains()
 				setChainBoneColor(armature)
-			self.report({"INFO"},"Created chain group from bone.")
+			self.report({"INFO"},translate_report("Created chain group from bone."))
 		else:
-			self.report({"ERROR"},"No chain group was created because the active chain collection is not set.")
+			self.report({"ERROR"},translate_report("No chain group was created because the active chain collection is not set."))
 		return {'FINISHED'}
 	@classmethod
 	def poll(self,context):
@@ -275,7 +281,7 @@ class WM_OT_CollisionFromBones(Operator):
 			
 			
 			if not valid:
-				showErrorMessageBox("Select one bone to make a sphere or two to make a capsule.")
+				_show_error_message("Select one bone to make a sphere or two to make a capsule.")
 			else:
 				if not isCLSP:
 					collisionCollection = getCollection(f"Chain Collisions - {chainCollection.name}",chainCollection,makeNew = False)
@@ -392,9 +398,9 @@ class WM_OT_CollisionFromBones(Operator):
 					setGeometryNodeModifierInput(modifier, 0, colCapsuleStartObj)
 					setGeometryNodeModifierInput(modifier, 1, colCapsuleEndObj)
 				alignCollisions()
-				self.report({"INFO"},"Created collision from bone.")
+				self.report({"INFO"},translate_report("Created collision from bone."))
 		else:
-			self.report({"ERROR"},"No collision was created because the active chain collection is not set.")
+			self.report({"ERROR"},translate_report("No collision was created because the active chain collection is not set."))
 		return {'FINISHED'}
 	@classmethod
 	def poll(self,context):
@@ -435,10 +441,10 @@ class WM_OT_NewChainHeader(Operator):
 				getChainHeader(chainHeader,chainHeaderObj,isChain2)
 				lockObjTransforms(chainHeaderObj)
 				bpy.context.view_layer.objects.active = chainHeaderObj
-			self.report({"INFO"},"Created new RE chain collection.")
+			self.report({"INFO"},translate_report("Created new RE chain collection."))
 			return {'FINISHED'}
 		else:
-			self.report({"ERROR"},"Invalid chain collection name.")
+			self.report({"ERROR"},translate_report("Invalid chain collection name."))
 			return {'CANCELLED'}
 	def invoke(self,context,event):
 		meshCollectionName = context.scene.get("REMeshLastImportedCollection")
@@ -474,12 +480,12 @@ class WM_OT_NewChainSettings(Operator):
 			getChainSettings(chainSettings,chainSettingsObj,isChain2)
 			lockObjTransforms(chainSettingsObj,lockLocation = False,lockRotation = True,lockScale = True)
 			chainSettingsObj.re_chain_chainsettings.id = currentSettingID
-			self.report({"INFO"},"Created chain settings object.")
+			self.report({"INFO"},translate_report("Created chain settings object."))
 			if bpy.context.mode == "OBJECT":	
 				bpy.context.view_layer.objects.active = chainSettingsObj
 			bpy.context.scene.re_chain_toolpanel.chainSetting = chainSettingsObj
 		else:
-			self.report({"ERROR"},"No chain settings object was created because the active chain collection is not set.")
+			self.report({"ERROR"},translate_report("No chain settings object was created because the active chain collection is not set."))
 		return {'FINISHED'}
 	@classmethod
 	def poll(self,context):
@@ -514,10 +520,10 @@ class WM_OT_NewWindSettings(Operator):
 			lockObjTransforms(windSettingsObj)
 			getWindSettings(windSettings,windSettingsObj,isChain2)
 			windSettingsObj.re_chain_windsettings.id = currentSettingID
-			self.report({"INFO"},"Created wind settings object.")
+			self.report({"INFO"},translate_report("Created wind settings object."))
 			bpy.context.view_layer.objects.active = windSettingsObj
 		else:
-			self.report({"ERROR"},"No wind settings object was created because the active chain collection is not set.")
+			self.report({"ERROR"},translate_report("No wind settings object was created because the active chain collection is not set."))
 		return {'FINISHED'}
 	@classmethod
 	def poll(self,context):
@@ -555,10 +561,10 @@ class WM_OT_NewChainJiggle(Operator):
 			chainJiggleObj.scale = (chainJiggle.rangeX, chainJiggle.rangeY, chainJiggle.rangeZ)
 			chainJiggleObj.location = (chainJiggle.rangeOffsetX, chainJiggle.rangeOffsetY, chainJiggle.rangeOffsetZ)
 			
-			self.report({"INFO"},"Created chain jiggle object.")
+			self.report({"INFO"},translate_report("Created chain jiggle object."))
 			bpy.context.view_layer.objects.active = chainJiggleObj
 		else:
-			self.report({"ERROR"},"No chain jiggle object was created because the active chain collection is not set.")
+			self.report({"ERROR"},translate_report("No chain jiggle object was created because the active chain collection is not set."))
 		return {'FINISHED'}
 
 class WM_OT_NewChainLink(Operator):
@@ -629,10 +635,10 @@ class WM_OT_NewChainLink(Operator):
 			
 			getChainLink(chainLink,chainLinkObj)
 			
-			self.report({"INFO"},"Created chain link object.")
+			self.report({"INFO"},translate_report("Created chain link object."))
 			bpy.context.view_layer.objects.active = chainLinkObj
 		else:
-			self.report({"ERROR"},"No chain link object was created because the active chain collection is not set.")
+			self.report({"ERROR"},translate_report("No chain link object was created because the active chain collection is not set."))
 		return {'FINISHED'}
 	@classmethod
 	def poll(self,context):
@@ -737,13 +743,13 @@ class WM_OT_CreateChainLinkCollision(Operator):
 						linkCollisionObj.re_chain_chainlink_collision.collisionRadius = linkCollision.collisionRadius
 						linkCollisionObj.re_chain_chainlink_collision.collisionFilterFlags = linkCollision.collisionFilterFlags
 						linkCollisionObj.show_in_front = bpy.context.scene.re_chain_toolpanel.drawLinkCollisionsThroughObjects
-					self.report({"INFO"},"Created chain link collision.")
+					self.report({"INFO"},translate_report("Created chain link collision."))
 				else:
-					self.report({"ERROR"},"The chain groups do not have the same amount of bones or are not set in the chain link.")
+					self.report({"ERROR"},translate_report("The chain groups do not have the same amount of bones or are not set in the chain link."))
 			
-			self.report({"INFO"},"Created chain link collision.")
+			self.report({"INFO"},translate_report("Created chain link collision."))
 		else:
-			self.report({"ERROR"},"No chain link object was created because the active chain collection is not set.")
+			self.report({"ERROR"},translate_report("No chain link object was created because the active chain collection is not set."))
 		return {'FINISHED'}
 	@classmethod
 	def poll(self,context):
@@ -859,9 +865,9 @@ class WM_OT_CopyChainProperties(Operator):
 				clipboard.re_chain_type_name = "Collision Data"
 				
 		else:
-			showErrorMessageBox("A chain object must be selected.")
+			_show_error_message("A chain object must be selected.")
 			return{'CANCELLED'}
-		self.report({"INFO"},"Copied properties of " + str(clipboard.re_chain_type_name)+" object to clipboard.")
+		self.report({"INFO"},translate_report("Copied properties of {} object to clipboard.", clipboard.re_chain_type_name))
 		return {'FINISHED'}
 
 class WM_OT_PasteChainProperties(Operator):
@@ -937,9 +943,9 @@ class WM_OT_PasteChainProperties(Operator):
 					activeObj.re_chain_chaincollision.endCollisionOffset = activeObj.re_chain_chaincollision.endCollisionOffset
 					activeObj.re_chain_chaincollision.radius = activeObj.re_chain_chaincollision.radius
 				tag_redraw(bpy.context)#Redraw property panel
-				self.report({"INFO"},"Pasted properties of " + str(clipboard.re_chain_type_name)+" object from clipboard.")
+				self.report({"INFO"},translate_report("Pasted properties of {} object from clipboard.", clipboard.re_chain_type_name))
 			else:
-				showErrorMessageBox("The contents stored in the clipboard can't be applied to the selected object.")
+				_show_error_message("The contents stored in the clipboard can't be applied to the selected object.")
 		
 		return {'FINISHED'}
 
@@ -952,7 +958,7 @@ class WM_OT_AlignChainsToBones(Operator):
 		alignChains()
 		syncCollisionOffsets()
 		alignCollisions()
-		self.report({"INFO"},"Aligned chain objects to bones.")
+		self.report({"INFO"},translate_report("Aligned chain objects to bones."))
 		return {'FINISHED'}
 
 def hasChildNode(obj):
@@ -1052,10 +1058,10 @@ class WM_OT_AlignFrames(Operator):
 						frame.matrix_basis = chainNode.matrix_world.inverted() @ frame.matrix_basis
 						frame.location = chainNode.location
 						frame.scale = chainNode.scale
-			self.report({"INFO"},"Aligned angle limit directions.")
+			self.report({"INFO"},translate_report("Aligned angle limit directions."))
 			return {'FINISHED'}
 		else:
-			showErrorMessageBox("No chains found in selection or collection.")
+			_show_error_message("No chains found in selection or collection.")
 			return {'CANCELLED'}
 	@classmethod
 	def poll(self,context):
@@ -1083,7 +1089,7 @@ class WM_OT_ApplyChainSettingsPreset(Operator):
 			finished = readPresetJSON(os.path.join(presetsPath,enumValue),activeObj)
 		tag_redraw(bpy.context)
 		if finished:
-			self.report({"INFO"},"Applied chain settings preset.")
+			self.report({"INFO"},translate_report("Applied chain settings preset."))
 			return {'FINISHED'}
 		else:
 			return {'CANCELLED'}
@@ -1103,7 +1109,7 @@ class WM_OT_ApplyChainGroupPreset(Operator):
 			finished = readPresetJSON(os.path.join(presetsPath,enumValue),activeObj)
 		tag_redraw(bpy.context)
 		if finished:
-			self.report({"INFO"},"Applied chain group preset.")
+			self.report({"INFO"},translate_report("Applied chain group preset."))
 			return {'FINISHED'}
 		else:
 			return {'CANCELLED'}
@@ -1134,10 +1140,10 @@ class WM_OT_ApplyChainNodePreset(Operator):
 					finished = readPresetJSON(os.path.join(presetsPath,enumValue),nodeObj)
 				tag_redraw(bpy.context)
 		if finished:
-			self.report({"INFO"},"Applied chain node preset.")
+			self.report({"INFO"},translate_report("Applied chain node preset."))
 			return {'FINISHED'}
 		else:
-			showErrorMessageBox("Must select a chain node in order to apply the preset to it.")
+			_show_error_message("Must select a chain node in order to apply the preset to it.")
 			return {'CANCELLED'}
 class WM_OT_ApplyWindSettingsPreset(Operator):
 	bl_label = "Apply Wind Settings Preset"
@@ -1153,7 +1159,7 @@ class WM_OT_ApplyWindSettingsPreset(Operator):
 			finished = readPresetJSON(os.path.join(presetsPath,enumValue),activeObj)
 		tag_redraw(bpy.context)
 		if finished:
-			self.report({"INFO"},"Applied wind settings preset.")
+			self.report({"INFO"},translate_report("Applied wind settings preset."))
 			return {'FINISHED'}
 		else:
 			return {'CANCELLED'}
@@ -1182,7 +1188,7 @@ class WM_OT_SavePreset(Operator):
 	def execute(self, context):
 		finished = saveAsPreset(context.selected_objects, self.presetName)
 		if finished:
-			self.report({"INFO"},"Saved preset.")
+			self.report({"INFO"},translate_report("Saved preset."))
 			return {'FINISHED'}
 		else:
 			return {'CANCELLED'}
@@ -1201,7 +1207,7 @@ class WM_OT_CreateChainBoneGroup(Operator):
 		else:
 			for obj in bpy.data.objects:
 				if armature != None:
-					self.report({"WARNING"},"More than one armature was found in the scene. Select an armature before using this button.")
+					self.report({"WARNING"},translate_report("More than one armature was found in the scene. Select an armature before using this button."))
 					return {'CANCELLED'}
 				if obj.type == "ARMATURE":
 					armature = obj
@@ -1224,10 +1230,10 @@ class WM_OT_CreateChainBoneGroup(Operator):
 				else:
 					bone = armature.data.bones[chainBone]
 					bone.color.palette = "THEME03"
-			self.report({"INFO"},"Created bone group on armature from chain bones.")
+			self.report({"INFO"},translate_report("Created bone group on armature from chain bones."))
 			return {'FINISHED'}
 		else:
-			self.report({"WARNING"},"No armatures were found in the scene.")
+			self.report({"WARNING"},translate_report("No armatures were found in the scene."))
 			return {'CANCELLED'}
 
 
@@ -1279,7 +1285,7 @@ class WM_OT_HideNonNodes(Operator):
 			else:
 				if not obj.get("isLastNode") and bpy.context.scene.re_chain_toolpanel.hideLastNodeAngleLimit:
 					obj.hide_viewport = False
-		self.report({"INFO"},"Hid all non chain node objects.")
+		self.report({"INFO"},translate_report("Hid all non chain node objects."))
 		return {'FINISHED'}
 
 class WM_OT_HideNonCollisions(Operator):
@@ -1295,7 +1301,7 @@ class WM_OT_HideNonCollisions(Operator):
 				obj.hide_viewport = False
 			else:
 				obj.hide_viewport = True
-		self.report({"INFO"},"Hid all non collision objects.")
+		self.report({"INFO"},translate_report("Hid all non collision objects."))
 		return {'FINISHED'}
 class WM_OT_HideNonAngleLimits(Operator):
 	bl_label = "Hide Non Angle Limits"
@@ -1311,7 +1317,7 @@ class WM_OT_HideNonAngleLimits(Operator):
 					obj.hide_viewport = False
 				#obj.show_name = bpy.context.scene.re_chain_toolpanel.showNodeNames
 				
-		self.report({"INFO"},"Hid all non chain angle limit objects.")
+		self.report({"INFO"},translate_report("Hid all non chain angle limit objects."))
 		return {'FINISHED'}
 class WM_OT_UnhideAll(Operator):
 	bl_label = "Unhide All"
@@ -1325,7 +1331,7 @@ class WM_OT_UnhideAll(Operator):
 			else:
 				if bpy.context.scene.re_chain_toolpanel.showAngleLimitCones and not (obj.get("isLastNode") and bpy.context.scene.re_chain_toolpanel.hideLastNodeAngleLimit):
 					obj.hide_viewport = False
-		self.report({"INFO"},"Unhid all objects.")
+		self.report({"INFO"},translate_report("Unhid all objects."))
 		return {'FINISHED'}
 
 class WM_OT_RenameBoneChain(Operator):
@@ -1349,7 +1355,7 @@ class WM_OT_RenameBoneChain(Operator):
 			chainList.insert(0,startBone)
 			#print(chainList)
 		else:
-			showErrorMessageBox("Select only the chain start bone.")
+			_show_error_message("Select only the chain start bone.")
 			return {'CANCELLED'}
 		valid = True
 		
@@ -1358,7 +1364,7 @@ class WM_OT_RenameBoneChain(Operator):
 				valid = False
 		
 		if not valid:
-			showErrorMessageBox("Cannot have branching bones in a chain.")
+			_show_error_message("Cannot have branching bones in a chain.")
 			return {'CANCELLED'}
 		else:
 			
@@ -1413,7 +1419,7 @@ class WM_OT_RenameBoneChain(Operator):
 						if child.get("TYPE",None) == "RE_CHAIN_NODE_FRAME_HELPER":
 							child.name = newBoneName+"_ANGLE_LIMIT_HELPER"
 				bone.name = newBoneName
-		self.report({"INFO"},"Renamed bone chain.")
+		self.report({"INFO"},translate_report("Renamed bone chain."))
 		return {'FINISHED'}
 	
 	def invoke(self,context,event):
@@ -1462,10 +1468,10 @@ class WM_OT_ApplyAngleLimitRamp(Operator):
 						chainNode.re_chain_chainnode.angleLimitRad = angleLimitStep * (nodeIndex + 1)
 					else:
 						chainNode.re_chain_chainnode.angleLimitRad = self.maxAngleLimit
-			self.report({"INFO"},"Applied angle limit ramp to selected chain group(s).")
+			self.report({"INFO"},translate_report("Applied angle limit ramp to selected chain group(s)."))
 			return {'FINISHED'}
 		else:
-			showErrorMessageBox("Chain Group object(s) must be selected to apply an angle limit ramp.")
+			_show_error_message("Chain Group object(s) must be selected to apply an angle limit ramp.")
 			return {'CANCELLED'}
 	
 	def invoke(self,context,event):
@@ -1503,7 +1509,7 @@ class WM_OT_AlignBoneTailsToAxis(Operator):
 			chainList = startBone.children_recursive
 			chainList.insert(0,startBone)
 		else:
-			showErrorMessageBox("Select only the chain start bone.")
+			_show_error_message("Select only the chain start bone.")
 			return {'CANCELLED'}
 		
 		armature = startBone.id_data
@@ -1536,7 +1542,7 @@ class WM_OT_AlignBoneTailsToAxis(Operator):
 			armature.data.edit_bones[bone.name].tail = editBone.head + tailAddVector
 			armature.data.edit_bones[bone.name].roll = 0
 		bpy.ops.object.mode_set(mode="POSE")#Switch back to pose mode after finished editing bones
-		self.report({"INFO"},"Aligned bone tails to axis.")
+		self.report({"INFO"},translate_report("Aligned bone tails to axis."))
 		return {'FINISHED'}
 	def invoke(self,context,event):
 		return context.window_manager.invoke_props_dialog(self)
@@ -1668,10 +1674,10 @@ class WM_OT_CreateChainSubGroup(Operator):
 					
 					newNode.re_chain_chainnode.angleLimitRad *= self.multiplyAngleLimit 
 					nodeParent = newNode
-			self.report({"INFO"},"Created chain subgroup.")
+			self.report({"INFO"},translate_report("Created chain subgroup."))
 			return {'FINISHED'}
 		else:
-			showErrorMessageBox("Chain Group object(s) must be selected to create a sub group.")
+			_show_error_message("Chain Group object(s) must be selected to create a sub group.")
 			return {'CANCELLED'}
 	
 	def invoke(self,context,event):
@@ -1899,7 +1905,7 @@ class WM_OT_SetAttrFlags(Operator):
 						selectedObject.re_chain_chaingroup.attrFlags = bitFlag
 					else:
 						selectedObject.re_chain_chainsettings.groupDefaultAttr = bitFlag
-			self.report({"INFO"},"Set attribute flags.")
+			self.report({"INFO"},translate_report("Set attribute flags."))
 			tag_redraw(bpy.context)
 		return {'FINISHED'}
 	
@@ -1971,7 +1977,7 @@ class WM_OT_SetNodeAttrFlags(Operator):
 				selectedObjectType = selectedObject.get("TYPE",None)
 				if selectedObjectType == "RE_CHAIN_NODE":
 					selectedObject.re_chain_chainnode.attrFlags = bitFlag
-			self.report({"INFO"},"Set attribute flags.")
+			self.report({"INFO"},translate_report("Set attribute flags."))
 			tag_redraw(bpy.context)
 		return {'FINISHED'}
 	
@@ -2067,7 +2073,7 @@ class WM_OT_SetSettingAttrFlags(Operator):
 				selectedObjectType = selectedObject.get("TYPE",None)
 				if selectedObjectType == "RE_CHAIN_CHAINSETTINGS":
 					selectedObject.re_chain_chainsettings.settingsAttrFlags = bitFlag
-			self.report({"INFO"},"Set attribute flags.")
+			self.report({"INFO"},translate_report("Set attribute flags."))
 			tag_redraw(bpy.context)
 		return {'FINISHED'}
 	
@@ -2129,7 +2135,7 @@ class WM_OT_SetJiggleAttrFlags(Operator):
 				selectedObjectType = selectedObject.get("TYPE",None)
 				if selectedObjectType == "RE_CHAIN_JIGGLE":
 					selectedObject.re_chain_chainjiggle.attrFlags = bitFlag
-			self.report({"INFO"},"Set attribute flags.")
+			self.report({"INFO"},translate_report("Set attribute flags."))
 			tag_redraw(bpy.context)
 		return {'FINISHED'}
 	
@@ -2173,7 +2179,7 @@ class WM_OT_SetCFILPath(Operator):
 			selectedObjectType = selectedObject.get("TYPE",None)
 			if selectedObjectType == "RE_CHAIN_CHAINSETTINGS":
 				selectedObject.re_chain_chainsettings.colliderFilterInfoPath = self.cfilPath
-		self.report({"INFO"},"Set cfil path flags.")
+		self.report({"INFO"},translate_report("Set cfil path flags."))
 		tag_redraw(bpy.context)
 		return {'FINISHED'}
 	
