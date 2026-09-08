@@ -8,7 +8,7 @@ from .gen_functions import textColors,raiseWarning,raiseError,splitNativesPath
 from .file_re_chain import readREChain,writeREChain
 from .file_re_chain2 import readREChain2,writeREChain2
 from .pymmh3 import hash_wide
-from .blender_utils import showMessageBox,showErrorMessageBox
+from .blender_utils import showMessageBox,showErrorMessageBox,setGeometryNodeModifierInput
 from .re_chain_propertyGroups import (getChainHeader,
 									  getWindSettings,
 									  getChainSettings,
@@ -928,12 +928,8 @@ def importChainFile(filepath,options,isChain2 = False):
 				#modifier["Start Object"] = startObj.name
 				#modifier["End Object"] = endObj.name
 				#Can't access group inputs by name, have to use blender's auto generated names because ???
-				if bpy.app.version < (4,0,0):
-					modifier["Input_0"] = colCapsuleStartObj
-					modifier["Input_1"] = colCapsuleEndObj
-				else:
-					modifier["Socket_0"] = colCapsuleStartObj
-					modifier["Socket_1"] = colCapsuleEndObj
+				setGeometryNodeModifierInput(modifier, 0, colCapsuleStartObj)
+				setGeometryNodeModifierInput(modifier, 1, colCapsuleEndObj)
 		alignCollisions()
 	#CHAIN LINK IMPORT
 	#print(terminalNameHashDict)#debug
@@ -1044,17 +1040,10 @@ def importChainFile(filepath,options,isChain2 = False):
 					bpy.data.node_groups.remove(modifier.node_group)
 				modifier.node_group = nodeGroup
 				
-				if bpy.app.version < (4,0,0):
-					if objA != None:
-						modifier["Input_0"] = objA
-					if objB != None:
-						modifier["Input_1"] = objB
-					
-				else:
-					if objA != None:
-						modifier["Socket_0"] = objA
-					if objB != None:
-						modifier["Socket_1"] = objB
+				if objA != None:
+					setGeometryNodeModifierInput(modifier, 0, objA)
+				if objB != None:
+					setGeometryNodeModifierInput(modifier, 1, objB)
 				modifier.node_group.interface_update(bpy.context)
 				linkCollisionObj.re_chain_chainlink_collision.collisionRadius = linkCollision.collisionRadius
 				linkCollisionObj.re_chain_chainlink_collision.collisionFilterFlags = linkCollision.collisionFilterFlags

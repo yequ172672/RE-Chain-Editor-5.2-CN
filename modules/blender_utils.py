@@ -80,3 +80,25 @@ def operator_exists(idname):
         return True
     except:
         return False
+def setGeometryNodeModifierInput(modifier, socketIndex, value):
+	"""Set a Geometry Nodes modifier input across Blender API generations.
+
+	Blender 5 exposes modifier inputs through ``modifier.properties.inputs``;
+	assigning ``modifier[\"Socket_N\"]`` now raises because NodesModifier no
+	longer accepts ID properties. Older Blender versions keep the legacy
+	Input_N/Socket_N assignment path.
+	"""
+	socketName = f"Socket_{socketIndex}"
+	if bpy.app.version >= (5, 0, 0):
+		try:
+			socket = getattr(modifier.properties.inputs, socketName)
+			socket.value = value
+			return True
+		except (AttributeError, TypeError, RuntimeError):
+			return False
+	key = f"Input_{socketIndex}" if bpy.app.version < (4, 0, 0) else socketName
+	try:
+		modifier[key] = value
+		return True
+	except (KeyError, TypeError, RuntimeError):
+		return False

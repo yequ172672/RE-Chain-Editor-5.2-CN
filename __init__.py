@@ -1,7 +1,7 @@
 bl_info = {
 	"name": "RE Chain Editor",
 	"author": "NSA Cloud, alphaZomega",
-	"version": (14, 0),
+	"version": (14, 0, 1),
 	"blender": (3, 1, 2),
 	"location": "File > Import-Export",
 	"description": "Import and export RE Engine chain files.",
@@ -132,7 +132,7 @@ class ImportREChain(bpy.types.Operator, ImportHelper):
 		layout.prop_search(self, "targetArmature",bpy.data,"armatures")
 		layout.label(text = "Merge With Chain Collection:")
 		layout.prop_search(self, "mergeChain",bpy.data,"collections",icon = "COLLECTION_COLOR_02")
-		#layout.prop(self, "importUnknowns")#TODO
+		layout.prop(self, "importUnknowns")
 	def execute(self, context):
 		options = {"targetArmature":self.targetArmature,"mergeChain":self.mergeChain,"importUnknowns":self.importUnknowns}
 		editorVersion = str(bl_info["version"][0])+"."+str(bl_info["version"][1])
@@ -167,8 +167,8 @@ class ImportREChain(bpy.types.Operator, ImportHelper):
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 
-supportedChainVersions = set([55,54,53,48,52,39,46,24,44,21])		
-supportedChain2Versions = set([4,9,12,13,14,15])
+supportedChainVersions = set([55,54,53,48,52,39,46,24,44,21])
+supportedChain2Versions = set([4,9,12,13,14,15,17])		# 17: Onimusha: Way of the Sword
 def update_targetChainCollection(self,context):
 	temp = bpy.data.screens.get("temp")
 	browserSpace = None

@@ -11,7 +11,7 @@ from .file_re_chain import ChainHeaderData,ChainSettingsData,WindSettingsData,Ch
 from .file_re_chain2 import Chain2HeaderData,Chain2SettingsData,Chain2WindSettingsData,Chain2GroupData,Chain2NodeData,Chain2JiggleData,Chain2CollisionData,Chain2LinkData,Chain2LinkNode
 from .re_chain_propertyGroups import getChainHeader,getWindSettings,getChainSettings,getChainGroup,getChainNode,getChainJiggle,getChainLink,getChainCollision,getChainLinkCollisionNode
 from .ui_re_chain_panels import tag_redraw
-from .blender_utils import showErrorMessageBox,outlinerShowObject
+from .blender_utils import showErrorMessageBox,outlinerShowObject,setGeometryNodeModifierInput
 from .re_chain_presets import saveAsPreset,readPresetJSON
 from .re_chain_geoNodes import getColCapsuleGeoNodeTree,getColSphereGeoNodeTree,getChainLinkGeoNodeTree,getConeGeoNodeTree,getLinkColGeoNodeTree,getChainGroupMat
 
@@ -389,12 +389,8 @@ class WM_OT_CollisionFromBones(Operator):
 					#modifier["Start Object"] = startObj.name
 					#modifier["End Object"] = endObj.name
 					#Can't access group inputs by name, have to use blender's auto generated names because ???
-					if bpy.app.version < (4,0,0):
-						modifier["Input_0"] = colCapsuleStartObj
-						modifier["Input_1"] = colCapsuleEndObj
-					else:
-						modifier["Socket_0"] = colCapsuleStartObj
-						modifier["Socket_1"] = colCapsuleEndObj
+					setGeometryNodeModifierInput(modifier, 0, colCapsuleStartObj)
+					setGeometryNodeModifierInput(modifier, 1, colCapsuleEndObj)
 				alignCollisions()
 				self.report({"INFO"},"Created collision from bone.")
 		else:
@@ -729,17 +725,10 @@ class WM_OT_CreateChainLinkCollision(Operator):
 							bpy.data.node_groups.remove(modifier.node_group)
 						modifier.node_group = nodeGroup
 						
-						if bpy.app.version < (4,0,0):
-							if objA != None:
-								modifier["Input_0"] = objA
-							if objB != None:
-								modifier["Input_1"] = objB
-							
-						else:
-							if objA != None:
-								modifier["Socket_0"] = objA
-							if objB != None:
-								modifier["Socket_1"] = objB
+						if objA != None:
+							setGeometryNodeModifierInput(modifier, 0, objA)
+						if objB != None:
+							setGeometryNodeModifierInput(modifier, 1, objB)
 						modifier.node_group.interface_update(bpy.context)
 						if isChain2:
 							linkCollision = Chain2LinkNode()

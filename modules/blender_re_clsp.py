@@ -5,7 +5,7 @@ import os
 from .gen_functions import textColors,raiseWarning,raiseError,splitNativesPath
 from .file_re_clsp import readRECLSP,writeRECLSP,CLSPFile,CLSPEntry
 from .pymmh3 import hash_wide
-from .blender_utils import showMessageBox,showErrorMessageBox
+from .blender_utils import showMessageBox,showErrorMessageBox,setGeometryNodeModifierInput
 from .re_chain_geoNodes import getColCapsuleGeoNodeTree,getColSphereGeoNodeTree
 
 
@@ -503,12 +503,8 @@ def importCLSPFile(filepath,options):
 			#modifier["Start Object"] = startObj.name
 			#modifier["End Object"] = endObj.name
 			#Can't access group inputs by name, have to use blender's auto generated names because ???
-			if bpy.app.version < (4,0,0):
-				modifier["Input_0"] = colCapsuleStartObj
-				modifier["Input_1"] = colCapsuleEndObj
-			else:
-				modifier["Socket_0"] = colCapsuleStartObj
-				modifier["Socket_1"] = colCapsuleEndObj
+			setGeometryNodeModifierInput(modifier, 0, colCapsuleStartObj)
+			setGeometryNodeModifierInput(modifier, 1, colCapsuleEndObj)
 				
 			colCapsuleRootObj.re_chain_chaincollision.clspBitFlag0 = chainCollision.unknBitFlag0
 			colCapsuleRootObj.re_chain_chaincollision.clspBitFlag1 = chainCollision.unknBitFlag1

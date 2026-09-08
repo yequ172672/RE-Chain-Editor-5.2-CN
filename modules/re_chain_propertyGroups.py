@@ -16,6 +16,7 @@ from .pymmh3 import hash_wide
 from .file_re_chain2 import Chain2SettingsSubData
 
 from .re_chain_presets import reloadPresets
+from .blender_utils import setGeometryNodeModifierInput
 
 #V2 - Removed AttrFlags enum, replaced with a pseudo enum using int value and operator due to large variations in values
 
@@ -144,10 +145,7 @@ def update_AngleLimitRad(self, context):
 							
 							if "REChainGeometryNodes" in frameChild.modifiers:
 								modifier = frameChild.modifiers["REChainGeometryNodes"]
-								if bpy.app.version < (4,0,0):
-									modifier["Input_0"] = obj.re_chain_chainnode.angleLimitRad
-								else:
-									modifier["Socket_0"] = obj.re_chain_chainnode.angleLimitRad
+								setGeometryNodeModifierInput(modifier, 0, obj.re_chain_chainnode.angleLimitRad)
 								modifier.node_group.interface_update(context)
 								#print("Set modifier value")
 							#frameChild.data.spot_size = obj.re_chain_chainnode.angleLimitRad
@@ -279,10 +277,7 @@ def update_ChainGroupA(self, context):
 						break
 				if nodeObj != None:
 					if "REChainGeometryNodes" in obj.modifiers:
-						if bpy.app.version < (4,0,0):
-							obj.modifiers["REChainGeometryNodes"]["Input_0"] = nodeObj
-						else:
-							obj.modifiers["REChainGeometryNodes"]["Socket_0"] = nodeObj
+						setGeometryNodeModifierInput(obj.modifiers["REChainGeometryNodes"], 0, nodeObj)
 						obj.modifiers["REChainGeometryNodes"].node_group.interface_update(context)
 			obj.name = f"LINK_{str(linkIndex).zfill(2)} - {shortNameA} > {shortNameB}"
 def update_ChainGroupB(self, context):
@@ -307,10 +302,7 @@ def update_ChainGroupB(self, context):
 						break
 				if nodeObj != None:
 					if "REChainGeometryNodes" in obj.modifiers:
-						if bpy.app.version < (4,0,0):
-							obj.modifiers["REChainGeometryNodes"]["Input_1"] = nodeObj
-						else:
-							obj.modifiers["REChainGeometryNodes"]["Socket_1"] = nodeObj
+						setGeometryNodeModifierInput(obj.modifiers["REChainGeometryNodes"], 1, nodeObj)
 						obj.modifiers["REChainGeometryNodes"].node_group.interface_update(context)
 			if obj.re_chain_chainlink.chainGroupAObject in bpy.data.objects and bpy.data.objects[obj.re_chain_chainlink.chainGroupAObject].get("TYPE") == "RE_CHAIN_CHAINGROUP":
 				groupAObj = bpy.data.objects[obj.re_chain_chainlink.chainGroupAObject]

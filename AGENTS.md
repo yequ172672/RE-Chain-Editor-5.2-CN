@@ -1,0 +1,26 @@
+# RE Chain Editor
+
+## Key Files
+
+| Path | Purpose |
+| --- | --- |
+| `__init__.py` | Blender add-on registration and supported Chain/Chain2 version lists. |
+| `modules/file_re_chain2.py` | Chain2 binary reader/writer, including version-specific header layouts. |
+| `tests/test_chain2_versions.py` | Regression coverage for v15 and Onimusha v17 binary layouts. |
+| `tools/validate_chain2_sample.py` | Reproducible pure Python report for a real Chain2 sample. |
+| `tools/validate_chain2_blender.py` | Headless Blender mesh-armature plus Chain2 import validation. |
+
+## Subdirectories
+
+| Directory | Purpose |
+| --- | --- |
+| `modules/` | Blender integration and binary format implementation. |
+| `tests/` | Pure Python parser regression tests. |
+| `tools/` | Standalone parser validation utilities. |
+
+## Common Patterns
+
+- Keep OWOTS changes on `feat/onimusha-wots`; `origin` is the user's `yequ172672/RE-Chain-Editor` fork and `upstream` is `NSACloud/RE-Chain-Editor`.
+- Keep a Chain2 file version in `modules/file_re_chain2.py::supportedVersionSet` and the Blender file-handler set in `__init__.py` together.
+- Version 17 omits two header offsets, inserts an eight-byte reserved block, and uses a 112-byte header with no older cfil offset tail; both read and write paths must preserve that layout.
+- Run parser tests without Blender; use Blender 5.2 headless only for add-on registration and scene import checks.
