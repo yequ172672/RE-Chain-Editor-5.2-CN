@@ -23,6 +23,16 @@ LANGUAGES = ("zh_CN", "zh_HANS")
 # names, file extensions, enum identifiers and game names intentionally stay
 # recognizable in the Chinese UI.
 interface_translations = {
+    "Author Bilibili Homepage": "作者 B 站主页",
+    "RE Chain: Fork Maintenance": "RE Chain：分支维护",
+    "Blender 5.2 adaptation": "Blender 5.2 适配",
+    "Chinese localization / OWOTS support": "中文本地化 / OWOTS 支持",
+    'Fork maintainer: yequ172672': '分支作者 / 维护者：yequ172672',
+    'Maintained for Blender 5.2, Chinese localization and OWOTS support.': '维护内容：Blender 5.2 适配、中文本地化及 OWOTS 支持。',
+    'Updates: fork releases/tags; development branch: feat/onimusha-wots': '更新来源：分叉仓库发行版 / 标签；开发分支：feat/onimusha-wots',
+    'Fork GitHub Repository': '分叉 GitHub 仓库',
+    'Report a Fork Issue': '反馈分支问题',
+
     # Add-on metadata, file menus and file-browser labels.
     "RE Chain Editor": "RE Chain 编辑器",
     "Import RE Chain": "导入 RE Chain",

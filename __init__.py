@@ -1,6 +1,6 @@
 bl_info = {
 	"name": "RE Chain Editor",
-	"author": "NSA Cloud, alphaZomega",
+	"author": "NSA Cloud, alphaZomega; fork maintainer: yequ172672",
 	"version": (14, 0, 2),
 	"blender": (3, 1, 2),
 	"location": "File > Import-Export",
@@ -551,8 +551,32 @@ class ExportREChain2(bpy.types.Operator, ExportHelper):
 			self.report({"INFO"},translate_report("RE Chain export failed. See Window > Toggle System Console for details."))
 		return {"FINISHED"}
 
+class VIEW3D_PT_REChainForkMaintenance(bpy.types.Panel):
+    bl_label = "RE Chain: Fork Maintenance"
+    bl_idname = "VIEW3D_PT_re_chain_fork_maintenance"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "RE Chain"
+    bl_options = {'DEFAULT_CLOSED'}
+    bl_order = 100
+
+    @classmethod
+    def poll(cls, context):
+        return context is not None and context.scene is not None and "HIDE_RE_CHAIN_EDITOR_TAB" not in context.scene
+
+    def draw(self, context):
+        layout = self.layout
+        layout.label(text="Fork maintainer: yequ172672", icon='USER')
+        layout.label(text="Blender 5.2 adaptation")
+        layout.label(text="Chinese localization / OWOTS support")
+        layout.operator("wm.url_open", text="Author Bilibili Homepage", icon='URL').url = "https://space.bilibili.com/93825767"
+        layout.operator("wm.url_open", text="Fork GitHub Repository", icon='URL').url = "https://github.com/yequ172672/RE-Chain-Editor-5.2-CN/tree/feat/onimusha-wots"
+        layout.operator("wm.url_open", text="Report a Fork Issue", icon='URL').url = "https://github.com/yequ172672/RE-Chain-Editor-5.2-CN/issues"
+
+
 # Registration
 classes = [
+	VIEW3D_PT_REChainForkMaintenance,
 	REChainPreferences,
 	ImportREChain,
 	ExportREChain,
