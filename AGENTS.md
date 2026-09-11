@@ -27,6 +27,7 @@
 - Version 17 omits two header offsets, inserts an eight-byte reserved block, and uses a 112-byte header with no older cfil offset tail; both read and write paths must preserve that layout.
 - Run parser tests without Blender; use Blender 5.2 headless only for add-on registration and scene import checks.
 - Keep Chinese localization in `translations.py`; register both `zh_CN` and `zh_HANS` through `bpy.app.translations` and preserve `*`/`Operator` contexts, English fallback, format identifiers, and game IDs.
+- The updater treats `feat/onimusha-wots` as a manual-install branch target; only numeric fork releases/tags may set `update_ready` or report an automatic update.
 
 - Preserve upstream authorship and label yequ172672 as fork maintainer. Preferences and README link to `https://github.com/yequ172672/RE-Chain-Editor-5.2-CN`; updater releases/tags use this fork and the explicit `feat/onimusha-wots` branch option. Do not fall back to upstream or the updater default master branch.
 
