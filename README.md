@@ -268,3 +268,14 @@ https://github.com/mhvuze/MonsterHunterRiseModding/wiki/Editing-Chains-with-RE-C
 - [Statyk](https://www.youtube.com/channel/UC2nEkiSL_X7xh6QHJcS0Wjw) - Beta testing and feedback
 - [AlphaZomega](https://github.com/alphazolam/) - RE Chain 010 Template, Modified this addon to work in all games and other bugfixes/additions
 - [CG Cookie](https://github.com/CGCookie) - Addon updater module
+
+## 鬼武者：剑之道 Chain2 / FBXSkel 导出
+
+- 物理链选择 **RE Chain2 → 鬼武者：剑之道**，扩展名为 `.chain2.17`。本地游戏索引中有 443 个 Chain2 文件，没有旧 `.chain` 文件。
+- 骨架选择 **RE FBXSkel → 怪猎荒野 / 物语 3 / 鬼武者：剑之道 (.7)**，扩展名为 `.fbxskel.7`。导出窗口优先采用目标对象/集合记录的导入版本。
+- “RE9 导出后改一个字节”仅验证适用于 FBXSkel：偏移 `0x00` 的 `08` 改为 `07`，同时扩展名必须为 `.7`。现在直接选择 `.7`，无需手改。337 个原始骨架全部逐字节写回一致。
+- Chain2 不能如此转换：RE9 v15 与鬼武者 v17 的 Header 分别为 128 与 112 字节，表偏移和布局不同，必须通过 v17 写出。
+- 443 个原始 Chain2 全部通过读取—写入—重读字段校验及重复写入稳定性检查。5 个文件中的 81 条 free-link 已支持原样保留参数/端点并重定位；暂不提供 free-link 的独立编辑或合并，不允许带这些数据降级导出为旧版本。
+- 若对应 Mesh 缺少部分链骨骼，导入 Chain2 时启用 **Import Unknown Hashes / 导入未知哈希** 可保留相关记录。未匹配的骨骼不会因此获得正确的视口绑定；正常物理预览仍需完整骨架。旧场景里已经丢失的记录需从原始文件重新导入。
+
+Blender 5.2 已验证 3 个角色骨架的层级、变换与缩放，以及普通 Chain2 的 22 组/82 节点和带 free-link 样本的导出、保存重开。骨架局部变换最大误差小于 `2.4e-6`。这些是二进制和 Blender 验证，尚未完成游戏内物理/动画验收。

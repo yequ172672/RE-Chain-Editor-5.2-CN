@@ -432,7 +432,7 @@ class ImportREChain2(bpy.types.Operator, ImportHelper):
 		layout.prop_search(self, "targetArmature",bpy.data,"armatures")
 		layout.label(text = "Merge With Chain Collection:")
 		layout.prop_search(self, "mergeChain",bpy.data,"collections",icon = "COLLECTION_COLOR_02")
-		#layout.prop(self, "importUnknowns")#TODO
+		layout.prop(self, "importUnknowns")
 	def execute(self, context):
 		options = {"targetArmature":self.targetArmature,"mergeChain":self.mergeChain,"importUnknowns":self.importUnknowns}
 		editorVersion = str(bl_info["version"][0])+"."+str(bl_info["version"][1])
@@ -496,6 +496,7 @@ class ExportREChain2(bpy.types.Operator, ExportHelper):
 				(".9", "Dead Rising", "Dead Rising"),
 				(".14", "Monster Hunter Wilds", "Monster Hunter Wilds"),
 				(".15", "Resident Evil 9 / Monster Hunter Stories 3", "Resident Evil 9 / Monster Hunter Stories 3"),
+				(".17", "Onimusha: Way of the Sword", "Onimusha: Way of the Sword"),
 			   ],
 		default = ".14"
 		)
@@ -505,22 +506,19 @@ class ExportREChain2(bpy.types.Operator, ExportHelper):
 	   default = "")
 	filter_glob: StringProperty(default="*.chain2*", options={'HIDDEN'})
 	def invoke(self, context, event):
-		
-		if bpy.data.collections.get(self.targetCollection,None) == None:
-			if bpy.context.scene.re_chain_toolpanel.chainCollection:
-				self.targetCollection = bpy.context.scene.re_chain_toolpanel.chainCollection.name
-				if ".chain" in self.targetCollection:#Remove blender suffix after .mesh if it exists
-					self.filepath = self.targetCollection.split(".chain")[0]+".chain2" + self.filename_ext
-					
-				
-		if context.scene.get("REChainLastImportedChain2Version",0) in supportedChainVersions:
-			if context.scene["REChainLastImportedChain2Version"] == 12:
-				#MH Wilds beta fix
-				context.scene["REChainLastImportedChain2Version"] = 14
-			if context.scene["REChainLastImportedChain2Version"] == 13:
-				#MH Wilds TU4 fix
-				context.scene["REChainLastImportedChain2Version"] = 14
-			self.filename_ext = "."+str(context.scene["REChainLastImportedChain2Version"])
+		# Resolve the version before composing the filename. Chain2 has its own
+		# version set; the legacy Chain set cannot recognize OWOTS v17.
+		collection = bpy.data.collections.get(self.targetCollection) or context.scene.re_chain_toolpanel.chainCollection
+		version = collection.get("REChain2Version", context.scene.get("REChainLastImportedChain2Version", 0)) if collection is not None else context.scene.get("REChainLastImportedChain2Version", 0)
+		if version in supportedChain2Versions:
+			if version in (12, 13):
+				version = 14
+			self.filename_ext = "." + str(version)
+		if bpy.data.collections.get(self.targetCollection, None) == None:
+			if context.scene.re_chain_toolpanel.chainCollection:
+				self.targetCollection = context.scene.re_chain_toolpanel.chainCollection.name
+		if ".chain" in self.targetCollection:
+			self.filepath = self.targetCollection.split(".chain")[0] + ".chain2" + self.filename_ext
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	def draw(self, context):
@@ -549,6 +547,7 @@ class ExportREChain2(bpy.types.Operator, ExportHelper):
 			bpy.data.collections[self.targetCollection]["BatchExport_path"] = self.filepath
 		else:
 			self.report({"INFO"},translate_report("RE Chain export failed. See Window > Toggle System Console for details."))
+			return {"CANCELLED"}
 		return {"FINISHED"}
 
 class VIEW3D_PT_REChainForkMaintenance(bpy.types.Panel):

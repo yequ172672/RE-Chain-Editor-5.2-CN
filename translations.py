@@ -23,6 +23,7 @@ LANGUAGES = ("zh_CN", "zh_HANS")
 # names, file extensions, enum identifiers and game names intentionally stay
 # recognizable in the Chinese UI.
 interface_translations = {
+    "Onimusha: Way of the Sword": "鬼武者：剑之道",
     "Author Bilibili Homepage": "作者 B 站主页",
     "RE Chain: Fork Maintenance": "RE Chain：分支维护",
     "Blender 5.2 adaptation": "Blender 5.2 适配",

@@ -1,12 +1,13 @@
 #---BLENDER FUNCTIONS---#
 import bpy
 import os
+import json
 from mathutils import Matrix
 from math import radians
 
 from .gen_functions import textColors,raiseWarning,raiseError,splitNativesPath
 from .file_re_chain import readREChain,writeREChain
-from .file_re_chain2 import readREChain2,writeREChain2
+from .file_re_chain2 import readREChain2,writeREChain2,Chain2FreeLinkData
 from .pymmh3 import hash_wide
 from .blender_utils import showMessageBox,showErrorMessageBox,setGeometryNodeModifierInput
 from .re_chain_propertyGroups import (getChainHeader,
@@ -413,6 +414,9 @@ def importChainFile(filepath,options,isChain2 = False):
 		chainFile = readREChain(filepath)
 	else:
 		chainFile = readREChain2(filepath)
+	if isChain2 and chainFile.FreeLinkList and options.get("mergeChain"):
+		raiseWarning("Import OWOTS free-link chains into a separate collection; merging free links is not supported.")
+		return False
 	try:
 		chainVersion = int(os.path.splitext(filepath)[1].replace(".",""))
 	except:
@@ -488,6 +492,11 @@ def importChainFile(filepath,options,isChain2 = False):
 					parentCollection = collection
 					break
 		chainCollection = createChainCollection(chainFileName,parentCollection)
+		if isChain2:
+			chainCollection["REChain2Version"] = chainFile.Header.version
+			chainCollection["REChain2FreeLinks"] = json.dumps([
+				[link.parameters.hex(), link.nodes.hex()] for link in chainFile.FreeLinkList
+			])
 		try:
 				split = splitNativesPath(filepath)
 				if split != None:
@@ -799,7 +808,7 @@ def importChainFile(filepath,options,isChain2 = False):
 			if len(chainGroup.nodeList) > 0:
 				lightObj["isLastNode"] = 1
 				if isGroupHashMissing:
-					constraint = nodeObj.constraints.new(type = "COPY_LOCATION")
+					constraint = nodeObj.constraints.get("BoneName") or nodeObj.constraints.new(type = "COPY_LOCATION")
 					constraint.target = armature
 					constraint.subtarget = str(chainGroup.terminateNodeNameHash) #.split(":")[len(bone.name.split(":"))-1]
 					#terminalNameHashDict[hash_wide(currentBone.name)] = nodeObj
@@ -952,7 +961,7 @@ def importChainFile(filepath,options,isChain2 = False):
 		#if isChain2:
 			#getChain2Link(chainLink,chainLinkObj)
 		#else:
-		getChainLink(chainLink,chainLinkObj)
+		getChainLink(chainLink,chainLinkObj,isChain2)
 		lockObjTransforms(chainLinkObj)
 		chainLinkObj.re_chain_chainlink.chainGroupAObject = terminalNameHashDict[chainLink.terminateNodeNameHashA] if chainLink.terminateNodeNameHashA in terminalNameHashDict else str(chainLink.terminateNodeNameHashA)
 		chainLinkObj.re_chain_chainlink.chainGroupBObject = terminalNameHashDict[chainLink.terminateNodeNameHashB] if chainLink.terminateNodeNameHashB in terminalNameHashDict else str(chainLink.terminateNodeNameHashB)
@@ -1290,6 +1299,14 @@ def exportChainFile(filepath,options, version, isChain2 = False):
 		print(textColors.OKCYAN + "__________________________________\nChain export started."+textColors.ENDC)
 		if isChain2:
 			newChainFile = Chain2File()
+			for parameters, nodes in json.loads(chainCollection.get("REChain2FreeLinks", "[]")):
+				link = Chain2FreeLinkData()
+				link.parameters = bytes.fromhex(parameters)
+				link.nodes = bytes.fromhex(nodes)
+				newChainFile.FreeLinkList.append(link)
+			if newChainFile.FreeLinkList and version != 17:
+				raiseWarning("OWOTS free links require Chain2 version 17.")
+				return False
 		else:
 			newChainFile = ChainFile()
 		
@@ -1374,7 +1391,7 @@ def exportChainFile(filepath,options, version, isChain2 = False):
 					
 					newListItem = chainSettingsObj.re_chain_chainsettings.subDataList_items.add()
 					newListItem.values = (0,1,0,0,77,0,0)
-				print(f"Detected missing MH Wilds chain setting subdata, added missing subdata to {chainSettingsObj.name}")
+					print(f"Detected missing MH Wilds chain setting subdata, added missing subdata to {chainSettingsObj.name}")
 			else:
 				chainSettings = ChainSettingsData()
 				
@@ -1586,14 +1603,17 @@ def exportChainFile(filepath,options, version, isChain2 = False):
 			if chainLink.nodeCount == 0:
 				for chainGroup in newChainFile.ChainGroupList:
 					if chainLink.terminateNodeNameHashA == chainGroup.terminateNodeNameHash:
-						chainLink.nodeCount = chainGroup.nodeCount
+						chainLink.nodeCount = min(chainGroup.nodeCount, chainLinkObj.get("REChain2LinkNodeCount", chainGroup.nodeCount)) if isChain2 else chainGroup.nodeCount
 						break
 			newChainFile.ChainLinkList.append(chainLink)
 			#print(nodeObjList)
 		#Sort chain settings by ID, otherwise the chain groups will be assigned to the wrong chain settings in game
 		newChainFile.ChainSettingsList.sort(key = lambda x: x.id)
 		print("Chain Conversion Finished")
-		writeREChain(newChainFile, filepath)
+		if isChain2:
+			writeREChain2(newChainFile, filepath)
+		else:
+			writeREChain(newChainFile, filepath)
 		return True
 		#for newWindSetttings in newChainFile.WindSettingsList:
 			#print(newWindSetttings)

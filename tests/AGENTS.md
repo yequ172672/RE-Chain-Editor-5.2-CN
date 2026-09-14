@@ -6,6 +6,8 @@
 | --- | --- |
 | `test_chain2_versions.py` | Pure Python regression tests for independent v15/v17 header layouts and non-zero Chain2 data roundtrips. |
 | `test_geometry_modifier_inputs.py` | Checks Blender 3/4 legacy keys and Blender 5 modifier input properties. |
+| `test_export_options.py` | Executes export invoke to validate OWOTS selection and generated filenames. |
+| `blender_owots_exports.py` | Native FBXSkel transforms, Chain2 hash/count retention, free-link preservation and save/reopen acceptance. |
 
 ## Common Patterns
 
@@ -13,3 +15,5 @@
 - A PATH-independent alternative is `uv run --no-project --with pytest python -m pytest --rootdir tests --import-mode=importlib tests/test_chain2_versions.py`.
 - The header fixture is assembled with `struct`, independently of `Chain2HeaderData.write`, so offset and reserved-byte regressions are caught.
 - The data fixture uses non-zero settings, group/node, wind, and link values for both v15 and v17.
+
+- `blender_owots_exports.py` requires `--samples <extracted-root-with-natives> --mesh <ch001_00_00.mesh.260209350> --output <validation-directory>`; optional `--addon-root` checks extracted installation ZIPs. Run with factory preferences. Native assets must remain outside the repository.

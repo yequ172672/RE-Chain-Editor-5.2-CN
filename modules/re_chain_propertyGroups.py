@@ -315,10 +315,7 @@ def update_ChainLinkCollisionRadius(self, context):
 	if type(obj).__name__ == "Object":#Check if it's an object to prevent issues with clipboard 
 		if obj.get("TYPE",None) == "RE_CHAIN_LINK_COLLISION":
 			if "REChainGeometryNodes" in obj.modifiers:
-				if bpy.app.version < (4,0,0):
-					obj.modifiers["REChainGeometryNodes"]["Input_2"] = obj.re_chain_chainlink_collision.collisionRadius
-				else:
-					obj.modifiers["REChainGeometryNodes"]["Socket_2"] = obj.re_chain_chainlink_collision.collisionRadius
+				setGeometryNodeModifierInput(obj.modifiers["REChainGeometryNodes"], 2, obj.re_chain_chainlink_collision.collisionRadius)
 				obj.modifiers["REChainGeometryNodes"].node_group.interface_update(context)
 
 def update_hideLastNodeAngleLimit(self, context):
@@ -820,6 +817,8 @@ def getChainHeader(ChainHeaderData,targetObject,isChain2 = False):
 		targetObject.re_chain_header.legacyVersion = str(ChainHeaderData.legacyVersion)
 	else:
 		targetObject.re_chain_header.highFPSCalculateMode = str(ChainHeaderData.highFPSCalculateMode)
+		for field in ("wilds_unkn0", "taperedCollideMethod", "freeLinkJoint"):
+			targetObject["REChain2_" + field] = getattr(ChainHeaderData, field)
 		targetObject.re_chain_header.wilds_unkn1 = ChainHeaderData.wilds_unkn1
 		targetObject.re_chain_header.wilds_unkn2 = ChainHeaderData.wilds_unkn2
 	targetObject.re_chain_header.collisionFilterHit0 = str(ChainHeaderData.collisionFilterHit0)
@@ -846,6 +845,8 @@ def setChainHeaderData(ChainHeaderData,targetObject,isChain2 = False):
 		ChainHeaderData.legacyVersion = int(targetObject.re_chain_header.legacyVersion)
 	else:
 		ChainHeaderData.highFPSCalculateMode = int(targetObject.re_chain_header.highFPSCalculateMode)
+		for field in ("wilds_unkn0", "taperedCollideMethod", "freeLinkJoint"):
+			setattr(ChainHeaderData, field, targetObject.get("REChain2_" + field, 0))
 		ChainHeaderData.wilds_unkn1 = targetObject.re_chain_header.wilds_unkn1
 		ChainHeaderData.wilds_unkn2 = targetObject.re_chain_header.wilds_unkn2
 	ChainHeaderData.collisionFilterHit0 = int(targetObject.re_chain_header.collisionFilterHit0)
@@ -2449,6 +2450,10 @@ class chainLinkPropertyGroup(bpy.types.PropertyGroup):
 			   ]
 		)
 def getChainLink(ChainLinkData,targetObject,isChain2 = False):
+	if isChain2:
+		targetObject["REChain2LinkNodeCount"] = ChainLinkData.nodeCount
+		targetObject["REChain2LinkClspFlags0"] = ChainLinkData.clspFlags0
+		targetObject["REChain2LinkClspFlags1"] = ChainLinkData.clspFlags1
 	#Done manually to be able to account for chain version differences eventually
 	targetObject.re_chain_chainlink.distanceShrinkLimitCoef = ChainLinkData.distanceShrinkLimitCoef
 	targetObject.re_chain_chainlink.distanceExpandLimitCoef = ChainLinkData.distanceExpandLimitCoef
@@ -2461,6 +2466,9 @@ def getChainLink(ChainLinkData,targetObject,isChain2 = False):
 	
 
 def setChainLinkData(ChainLinkData,targetObject,isChain2 = False):
+	if isChain2:
+		ChainLinkData.clspFlags0 = targetObject.get("REChain2LinkClspFlags0", -1)
+		ChainLinkData.clspFlags1 = targetObject.get("REChain2LinkClspFlags1", -1)
 	#TODO get chain group links
 	ChainLinkData.distanceShrinkLimitCoef = targetObject.re_chain_chainlink.distanceShrinkLimitCoef 
 	ChainLinkData.distanceExpandLimitCoef = targetObject.re_chain_chainlink.distanceExpandLimitCoef 

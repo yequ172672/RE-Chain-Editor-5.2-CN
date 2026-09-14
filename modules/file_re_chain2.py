@@ -33,7 +33,7 @@ class SIZE_DATA():
 		if version >= VERSION_MHWILDS:
 			# The Python header includes the Wilds-era tail for versions 12+
 			# (128 bytes through MHS3). Chain2 v17 removes two offsets and
-			# inserts an eight-byte reserved block, bringing it back to 120.
+			# inserts an eight-byte reserved block; the v17 tail is handled below.
 			self.HEADER_SIZE = 128
 			self.CHAIN_SETTING_SIZE = 184
 			self.CHAIN_LINK_SIZE = 40
@@ -1116,6 +1116,38 @@ class Chain2LinkData():
 	def __str__(self):
 		return str(self.__class__) + ": " + str(self.__dict__)
 
+class Chain2FreeLinkData:
+	"""OWOTS free link: relocatable node pointer, opaque parameters/endpoints.
+
+	Keep unexposed fields verbatim; endpoint records contain local position and
+	bone hash, not file offsets. Layout checked against all local v17 samples.
+	"""
+	def __init__(self):
+		self.nodeOffset = 0
+		self.parameters = bytes(32)
+		self.nodes = b""
+
+	def read(self, file):
+		self.nodeOffset = read_uint64(file)
+		self.parameters = file.read(32)
+		if len(self.parameters) != 32:
+			raise ValueError("Truncated Chain2 free-link parameters")
+		count = int.from_bytes(self.parameters[12:16], "little")
+		position = file.tell()
+		file.seek(0, 2)
+		if count and (self.nodeOffset < 112 or self.nodeOffset + count * 16 > file.tell()):
+			raise ValueError("Invalid Chain2 free-link endpoint range")
+		file.seek(self.nodeOffset)
+		self.nodes = file.read(count * 16)
+		file.seek(position)
+
+	def write(self, file):
+		if len(self.parameters) != 32 or len(self.nodes) != int.from_bytes(self.parameters[12:16], "little") * 16:
+			raise ValueError("Invalid Chain2 free-link data")
+		write_uint64(file, self.nodeOffset)
+		file.write(self.parameters)
+
+
 class Chain2File():
 	def __init__(self):
 		self.Header = Chain2HeaderData()
@@ -1125,6 +1157,7 @@ class Chain2File():
 		self.ChainGroupList = []
 		self.WindSettingsList = []
 		self.ChainLinkList = []
+		self.FreeLinkList = []
 	def read(self,file):
 		self.Header.read(file)
 		
@@ -1166,6 +1199,13 @@ class Chain2File():
 			newChainLink.read(file,version)
 			self.ChainLinkList.append(newChainLink)
 
+		if version == VERSION_OWOTS and self.Header.freeLinkCount:
+			file.seek(self.Header.chainFreeLinkOffset)
+			for _ in range(self.Header.freeLinkCount):
+				link = Chain2FreeLinkData()
+				link.read(file)
+				self.FreeLinkList.append(link)
+
 	def recalculateOffsets(self):
 		sizeData = SIZE_DATA(self.Header.version)
 		version = self.Header.version
@@ -1183,6 +1223,7 @@ class Chain2File():
 				currentFilterPathOffset += len(chainSetting.subDataList) * sizeData.CHAIN_SETTING_SUBDATA_SIZE
 		self.Header.chainModelCollisionOffset = getPaddedPos(currentFilterPathOffset,16)
 		self.Header.chainSubDataOffset = self.Header.chainModelCollisionOffset + self.Header.chainModelCollisionCount*sizeData.COLLISION_SIZE + getPaddingAmount(self.Header.chainModelCollisionOffset+self.Header.chainModelCollisionCount*sizeData.COLLISION_SIZE, 16)
+		self.Header.chainSubDataCount = 0
 		currentSubDataOffset = self.Header.chainSubDataOffset
 		for collision in self.ChainCollisionList:
 			if collision.subDataCount > 0:
@@ -1227,6 +1268,19 @@ class Chain2File():
 					chainLink.nodeOffset = currentLinkDataOffset
 					currentLinkDataOffset += sizeData.CHAIN_LINK_NODE_SIZE * len(chainLink.nodeColLinkList)
 				
+		if self.Header.version == VERSION_OWOTS:
+			self.Header.freeLinkCount = len(self.FreeLinkList)
+			self.Header.chainFreeLinkOffset = 0
+			if self.FreeLinkList:
+				end = currentLinkDataOffset if self.ChainLinkList else self.Header.chainWindSettingsOffset + sizeData.WIND_SIZE * self.Header.chainWindSettingsCount
+				self.Header.chainFreeLinkOffset = getPaddedPos(end, 16)
+				end = self.Header.chainFreeLinkOffset + 40 * len(self.FreeLinkList)
+				for link in self.FreeLinkList:
+					link.nodeOffset = end if link.nodes else 0
+					end += len(link.nodes)
+		elif self.FreeLinkList:
+			raise ValueError("OWOTS free links require Chain2 version 17")
+
 	def write(self,file):
 		version = self.Header.version
 		self.recalculateOffsets()
@@ -1297,6 +1351,15 @@ class Chain2File():
 			for linkNode in chainLink.nodeColLinkList:
 				linkNode.write(file)
 				
+		if self.FreeLinkList:
+			file.seek(self.Header.chainFreeLinkOffset)
+			for link in self.FreeLinkList:
+				link.write(file)
+			for link in self.FreeLinkList:
+				if link.nodes:
+					file.seek(link.nodeOffset)
+					file.write(link.nodes)
+
 #---CHAIN IO FUNCTIONS---#
 
 def readREChain2(filepath):

@@ -32,3 +32,5 @@
 - Preserve upstream authorship and label yequ172672 as fork maintainer. Preferences and README link to `https://github.com/yequ172672/RE-Chain-Editor-5.2-CN`; updater releases/tags use this fork and the explicit `feat/onimusha-wots` branch option. Do not fall back to upstream or the updater default master branch.
 
 - The N-sidebar RE Chain tab includes a default-collapsed Fork Maintenance panel declared in `__init__.py`; keep it visible without an active object and respect the existing tab hide flag.
+
+- Chain2 exports expose OWOTS .17, choose the imported collection version before composing the filename, and return CANCELLED on failed export. Free-link metadata is retained across save/reopen; v15 byte-patching cannot produce a v17 header.

@@ -256,3 +256,34 @@ def test_nonzero_settings_group_node_wind_and_link_roundtrip(version: int):
     assert link.clspFlags1 == 0x22222222
     assert link.nodeColLinkList[0].collisionRadius == pytest.approx(0.77)
     assert link.nodeColLinkList[0].collisionFilterFlags == 0x12345678
+
+
+def test_owots_free_links_survive_relocation():
+    source = make_nonzero_file(17)
+    stream = BytesIO()
+    source.write(stream)
+    raw = bytearray(stream.getvalue())
+    offset = (len(raw) + 15) & ~15
+    raw.extend(b"\0" * (offset - len(raw)))
+    struct.pack_into("<Q", raw, 40, offset)
+    raw[94] = 1
+    raw[95] = 3
+    # Independent v17 free-link fixture: pointer, 32 opaque bytes, two
+    # 16-byte endpoints (position xyz + bone hash).
+    header = struct.pack("<ffII4i", 1.0, 0.25, 0, 2, -1, -1, 0, -1)
+    nodes = struct.pack("<3fI3fI", 1, 2, 3, 0x12345678, 4, 5, 6, 0xAABBCCDD)
+    raw.extend(struct.pack("<Q", offset + 40) + header + nodes)
+    parsed = chain2.Chain2File()
+    parsed.read(BytesIO(raw))
+    # Relocate tables by adding another setting.
+    parsed.ChainSettingsList.append(chain2.Chain2SettingsData())
+    parsed.Header.chainSettingsCount += 1
+    result = BytesIO()
+    parsed.write(result)
+    output = result.getvalue()
+    relocated = struct.unpack_from("<Q", output, 40)[0]
+    assert relocated != offset
+    assert output[94:96] == bytes((1, 3))
+    node_offset = struct.unpack_from("<Q", output, relocated)[0]
+    assert output[relocated + 8:relocated + 40] == header
+    assert output[node_offset:node_offset + 32] == nodes
