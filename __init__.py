@@ -81,6 +81,23 @@ class REChainPreferences(AddonPreferences):
 		op.url = 'https://ko-fi.com/nsacloud'
 		addon_updater_ops.update_settings_ui(self,context)
 
+
+def _workspace_target_format(operator, context, extension, importing=False):
+    game = context.scene.get('modWorkspace_gameName')
+    profiles = {
+        'chain': {'DMC5':21,'RE2':21,'RE3':24,'RE8':39,'RE2RT':46,'RE3RT':46,'RE7RT':46,
+                  'MHRSB':48,'SF6':52,'RE4':53,'DD2':54,'PRAG':55},
+        'chain2': {'DD2':4,'DR':9,'MHWILDS':14,'RE9':15,'MHS3':15,'OWOTS':17}}
+    version = profiles.get(extension, {}).get(game)
+    if version is None:
+        return
+    if importing:
+        operator.filter_glob = '*.' + extension + '.' + str(version)
+    else:
+        operator.filename_ext = '.' + str(version)
+        if '.chain' in operator.filepath:
+            operator.filepath = operator.filepath.split('.chain')[0] + '.' + extension + operator.filename_ext
+
 class ImportREChain(bpy.types.Operator, ImportHelper):
 	'''Import RE Engine Chain File'''
 	bl_idname = "re_chain.importfile"
@@ -124,6 +141,7 @@ class ImportREChain(bpy.types.Operator, ImportHelper):
 			if armature != None:
 				self.targetArmature = armature.data.name
 			
+		_workspace_target_format(self, context, 'chain', importing=True)
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -165,6 +183,7 @@ class ImportREChain(bpy.types.Operator, ImportHelper):
 			self.targetArmature = armatureObj.data.name
 		if self.directory:
 			return context.window_manager.invoke_props_dialog(self)
+		_workspace_target_format(self, context, 'chain', importing=True)
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 
@@ -223,6 +242,7 @@ class ExportREChain(bpy.types.Operator, ExportHelper):
 				
 		if context.scene.get("REChainLastImportedChainVersion",0) in supportedChainVersions:
 			self.filename_ext = "."+str(context.scene["REChainLastImportedChainVersion"])
+		_workspace_target_format(self, context, 'chain', importing=False)
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	def draw(self, context):
@@ -423,6 +443,7 @@ class ImportREChain2(bpy.types.Operator, ImportHelper):
 			if armature != None:
 				self.targetArmature = armature.data.name
 			
+		_workspace_target_format(self, context, 'chain2', importing=True)
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -464,6 +485,7 @@ class ImportREChain2(bpy.types.Operator, ImportHelper):
 			self.targetArmature = armatureObj.data.name
 		if self.directory:
 			return context.window_manager.invoke_props_dialog(self)
+		_workspace_target_format(self, context, 'chain2', importing=True)
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -519,6 +541,7 @@ class ExportREChain2(bpy.types.Operator, ExportHelper):
 				self.targetCollection = context.scene.re_chain_toolpanel.chainCollection.name
 		if ".chain" in self.targetCollection:
 			self.filepath = self.targetCollection.split(".chain")[0] + ".chain2" + self.filename_ext
+		_workspace_target_format(self, context, 'chain2', importing=False)
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	def draw(self, context):

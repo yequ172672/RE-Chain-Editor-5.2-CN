@@ -21,6 +21,7 @@
 | `tools/` | Standalone parser validation utilities. |
 
 ## Common Patterns
+- When the Mesh workspace sets Scene.modWorkspace_gameName, Chain/Chain2 file browser filters and default export extensions follow verified game-version mappings. Unmapped combinations retain source defaults; never reinterpret input bytes or rewrite source collection version metadata.
 
 - Keep OWOTS changes on `feat/onimusha-wots`; `origin` is the user's `yequ172672/RE-Chain-Editor-5.2-CN` fork and `upstream` is `NSACloud/RE-Chain-Editor`.
 - Keep a Chain2 file version in `modules/file_re_chain2.py::supportedVersionSet` and the Blender file-handler set in `__init__.py` together.
